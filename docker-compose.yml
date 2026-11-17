@@ -1,0 +1,32 @@
+name: clinic-booking-appointment
+
+services:
+  # ASP.NET Core 10 API + SQLite (Swagger UI at http://localhost:8081/swagger)
+  api:
+    build:
+      context: ./Backend/API
+      dockerfile: Dockerfile
+    container_name: clinic-api
+    environment:
+      # Store clinic.db in the mounted volume (writable by the non-root app user)
+      ConnectionStrings__DefaultConnection: "Data Source=/app/data/clinic.db"
+    ports:
+      - "8081:8080"
+    volumes:
+      - clinic-data:/app/data
+    restart: unless-stopped
+
+  # Angular 21 app served by nginx, proxying /api/ to the api service
+  web:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: clinic-web
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  clinic-data:

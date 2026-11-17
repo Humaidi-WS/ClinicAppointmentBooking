@@ -1,0 +1,63 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Patient record</p>
+      <h1>Appointments</h1>
+    </div>
+    <form class="patient-form" (submit)="$event.preventDefault(); applyPatientId()">
+      <label>
+        Patient ID
+        <input
+          type="number"
+          min="1"
+          step="1"
+          placeholder="Enter your Patient ID"
+          [(ngModel)]="patientIdInput"
+          name="patientId"
+        />
+      </label>
+      <button type="submit">Load</button>
+    </form>
+  </header>
+
+  @if (error()) {
+    <div class="banner error" role="alert">{{ error() }}</div>
+  }
+  @if (success()) {
+    <div class="banner success" role="status">{{ success() }}</div>
+  }
+
+  @if (loading()) {
+    <p class="muted">Loading appointments…</p>
+  } @else if (!hasLoaded()) {
+    <p class="muted">Enter your Patient ID above and click Load to view your appointments.</p>
+  } @else if (appointments().length === 0) {
+    <p class="muted">No appointments found for Patient ID {{ session.patientId() }}.</p>
+  } @else {
+    <div class="list">
+      @for (appointment of appointments(); track appointment.appointmentId) {
+        <article class="card">
+          <div>
+            <h2> Dr. {{ appointment.doctorName }}</h2>
+            <p>{{ appointment.doctorSpecialty }}</p>
+            <p class="when">{{ appointment.startTime | date: 'EEEE, MMM d, y, HH:mm' }}</p>
+          </div>
+          <div class="actions">
+            <span class="status" [attr.data-status]="appointment.appointmentStatus">
+              {{ appointment.appointmentStatus }}
+            </span>
+            @if (canCancel(appointment)) {
+              <button
+                type="button"
+                (click)="cancel(appointment)"
+                [disabled]="cancellingId() === appointment.appointmentId"
+              >
+                {{ cancellingId() === appointment.appointmentId ? 'Cancelling…' : 'Cancel' }}
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

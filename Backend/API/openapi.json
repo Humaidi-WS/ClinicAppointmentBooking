@@ -1,0 +1,667 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Clinic Appointment Booking API",
+    "version": "1.0.0",
+    "description": "Comprehensive RESTful API for managing clinic doctor appointments, querying available schedules, reserving 30-minute appointment slots, and viewing or cancelling patient bookings.\n\n### Key Business Rules:\n- **Working Days**: Sunday through Thursday (closed on Fridays and Saturdays).\n- **Working Hours**: 08:00 to 16:00 local time.\n- **Slot Duration**: Exactly 30 minutes (:00 and :30 alignment).\n- **Booking Window**: From today (if before 16:00) or tomorrow up to 1 month ahead.\n- **Cancellations**: Requires matching `patientId` and cannot cancel past or already cancelled appointments.",
+    "contact": {
+      "name": "Clinic Support Team",
+      "email": "support@clinicbooking.local"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5246",
+      "description": "Local Development Server (HTTP)"
+    },
+    {
+      "url": "https://localhost:7036",
+      "description": "Local Development Server (HTTPS)"
+    },
+    {
+      "url": "http://localhost:8080",
+      "description": "Docker Container Endpoint"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Doctors",
+      "description": "Endpoints for browsing and retrieving clinic doctor profiles."
+    },
+    {
+      "name": "Schedules",
+      "description": "Endpoints for querying bookable calendar dates and 30-minute daily time slots."
+    },
+    {
+      "name": "Appointments",
+      "description": "Endpoints for booking new appointments and cancelling existing appointments."
+    },
+    {
+      "name": "Patients",
+      "description": "Endpoints for retrieving appointments by patient ID."
+    }
+  ],
+  "paths": {
+    "/api/Appointments/doctors": {
+      "get": {
+        "tags": [
+          "Doctors"
+        ],
+        "summary": "Get all doctors",
+        "description": "Retrieves the list of all registered clinic doctors sorted alphabetically by first name and last name.",
+        "operationId": "getAllDoctors",
+        "responses": {
+          "200": {
+            "description": "A list of all doctors currently practicing at the clinic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Doctor"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "firstName": "Daniel",
+                    "lastName": "Wilson",
+                    "specialty": "Orthopedics"
+                  },
+                  {
+                    "id": 2,
+                    "firstName": "Emily",
+                    "lastName": "Carter",
+                    "specialty": "Pediatrics"
+                  },
+                  {
+                    "id": 3,
+                    "firstName": "James",
+                    "lastName": "Anderson",
+                    "specialty": "Cardiology"
+                  },
+                  {
+                    "id": 4,
+                    "firstName": "Michael",
+                    "lastName": "Roberts",
+                    "specialty": "Neurology"
+                  },
+                  {
+                    "id": 5,
+                    "firstName": "Sarah",
+                    "lastName": "Mitchell",
+                    "specialty": "Dermatology"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Appointments/dates": {
+      "get": {
+        "tags": [
+          "Schedules"
+        ],
+        "summary": "Get selectable appointment dates",
+        "description": "Returns an array of available calendar dates (`YYYY-MM-DD`) within the next month.\nFridays and Saturdays are excluded because the clinic is closed on weekends.\nIf queried at or after 16:00 local time, available dates begin from tomorrow.",
+        "operationId": "getSelectableDates",
+        "responses": {
+          "200": {
+            "description": "List of selectable dates in ISO-8601 date format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2026-11-17"
+                  }
+                },
+                "example": [
+                  "2026-11-17",
+                  "2026-11-18",
+                  "2026-11-19",
+                  "2026-11-22",
+                  "2026-11-23"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Appointments/doctors/{doctorId}/schedule": {
+      "get": {
+        "tags": [
+          "Schedules"
+        ],
+        "summary": "Get doctor's day schedule",
+        "description": "Retrieves all 30-minute time slots (08:00 to 16:00) for a given doctor on the specified date.\nEach slot includes the time string (`HH:mm`) and an `isAvailable` boolean flag indicating whether\nthe slot is open for booking. Returns an empty array if the requested date is in the past or on a weekend.",
+        "operationId": "getDaySchedule",
+        "parameters": [
+          {
+            "name": "doctorId",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the doctor.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "description": "Date for which to fetch time slots (`YYYY-MM-DD`).",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-11-18"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of 30-minute slots with availability status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimeSlot"
+                  }
+                },
+                "example": [
+                  {
+                    "time": "08:00",
+                    "isAvailable": true
+                  },
+                  {
+                    "time": "08:30",
+                    "isAvailable": true
+                  },
+                  {
+                    "time": "09:00",
+                    "isAvailable": false
+                  },
+                  {
+                    "time": "09:30",
+                    "isAvailable": true
+                  },
+                  {
+                    "time": "15:30",
+                    "isAvailable": true
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Appointments/book": {
+      "post": {
+        "tags": [
+          "Appointments"
+        ],
+        "summary": "Book an appointment",
+        "description": "Registers a new patient and reserves a 30-minute appointment slot with the requested doctor.\n\n**Validations applied**:\n- Slot cannot be in the past.\n- Appointment must fall on Sunday-Thursday between 08:00 and 16:00.\n- Start time must align to exact 30-minute marks (e.g., `:00:00` or `:30:00`).\n- The doctor ID must exist.\n- Slot must not already be booked.",
+        "operationId": "bookAppointment",
+        "requestBody": {
+          "required": true,
+          "description": "Booking details and patient information.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookAppointmentRequest"
+              },
+              "example": {
+                "doctorId": 1,
+                "startTime": "2026-11-18T09:00:00",
+                "patientFirstName": "John",
+                "patientLastName": "Doe",
+                "patientPhoneNumber": "+1-555-0199",
+                "patientDateOfBirth": "1992-04-15"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Appointment booked successfully.",
+            "headers": {
+              "Location": {
+                "description": "URI to view appointments for the newly registered patient.",
+                "schema": {
+                  "type": "string",
+                  "example": "/api/Appointments/patients/1/appointments"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookAppointmentResponse"
+                },
+                "example": {
+                  "message": "Appointment booked successfully. Your Patient ID is 1 — save it to view your appointments.",
+                  "appointmentId": 1,
+                  "patientId": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Booking failed due to validation rules or the slot is already taken.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "slotTaken": {
+                    "summary": "Slot already taken",
+                    "value": {
+                      "error": "This time slot was just booked by someone else."
+                    }
+                  },
+                  "pastBooking": {
+                    "summary": "Booking in the past",
+                    "value": {
+                      "error": "Cannot book an appointment in the past."
+                    }
+                  },
+                  "clinicClosed": {
+                    "summary": "Closed day",
+                    "value": {
+                      "error": "The clinic is closed on Fridays and Saturdays."
+                    }
+                  },
+                  "outsideHours": {
+                    "summary": "Outside working hours",
+                    "value": {
+                      "error": "Time is outside working hours (08:00 to 16:00)."
+                    }
+                  },
+                  "unalignedSlot": {
+                    "summary": "Unaligned slot",
+                    "value": {
+                      "error": "Appointments must be aligned to exact 30-minute slots."
+                    }
+                  },
+                  "doctorNotFound": {
+                    "summary": "Doctor not found",
+                    "value": {
+                      "error": "Doctor not found."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Appointments/patients/{patientId}/appointments": {
+      "get": {
+        "tags": [
+          "Patients"
+        ],
+        "summary": "Get patient appointments",
+        "description": "Retrieves all appointments (upcoming, completed, and cancelled) for the given patient ID,\nordered descending by appointment start time.",
+        "operationId": "getPatientAppointments",
+        "parameters": [
+          {
+            "name": "patientId",
+            "in": "path",
+            "required": true,
+            "description": "The unique patient identifier assigned during booking.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of appointments associated with the patient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PatientAppointment"
+                  }
+                },
+                "example": [
+                  {
+                    "appointmentId": 1,
+                    "doctorId": 3,
+                    "doctorName": "James Anderson",
+                    "doctorSpecialty": "Cardiology",
+                    "startTime": "2026-11-18T09:00:00",
+                    "appointmentStatus": "Upcoming"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Appointments/cancel": {
+      "delete": {
+        "tags": [
+          "Appointments"
+        ],
+        "summary": "Cancel an appointment",
+        "description": "Cancels an upcoming appointment. Requires both `appointmentId` and matching `patientId`\nfor verification. Past appointments or already cancelled appointments cannot be cancelled.",
+        "operationId": "cancelAppointment",
+        "requestBody": {
+          "required": true,
+          "description": "Identifiers needed to locate and verify ownership of the appointment.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAppointmentRequest"
+              },
+              "example": {
+                "appointmentId": 1,
+                "patientId": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment successfully cancelled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelAppointmentResponse"
+                },
+                "example": {
+                  "message": "Appointment cancelled successfully."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cancellation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "permissionDenied": {
+                    "summary": "Patient ID mismatch",
+                    "value": {
+                      "error": "Permission denied."
+                    }
+                  },
+                  "notFound": {
+                    "summary": "Appointment does not exist",
+                    "value": {
+                      "error": "Appointment not found."
+                    }
+                  },
+                  "alreadyCancelled": {
+                    "summary": "Already cancelled",
+                    "value": {
+                      "error": "Already cancelled."
+                    }
+                  },
+                  "pastAppointment": {
+                    "summary": "Cannot cancel past appointments",
+                    "value": {
+                      "error": "Cannot cancel past appointments."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Doctor": {
+        "type": "object",
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "specialty"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique doctor identifier.",
+            "example": 1
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Doctor's first name.",
+            "example": "James"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Doctor's last name.",
+            "example": "Anderson"
+          },
+          "specialty": {
+            "type": "string",
+            "description": "Medical specialty (e.g. Cardiology, Pediatrics).",
+            "example": "Cardiology"
+          }
+        }
+      },
+      "TimeSlot": {
+        "type": "object",
+        "required": [
+          "time",
+          "isAvailable"
+        ],
+        "properties": {
+          "time": {
+            "type": "string",
+            "description": "24-hour time format (HH:mm) representing slot start time.",
+            "example": "08:30"
+          },
+          "isAvailable": {
+            "type": "boolean",
+            "description": "Indicates if the slot is open for booking.",
+            "example": true
+          }
+        }
+      },
+      "BookAppointmentRequest": {
+        "type": "object",
+        "required": [
+          "doctorId",
+          "startTime",
+          "patientFirstName",
+          "patientLastName",
+          "patientPhoneNumber",
+          "patientDateOfBirth"
+        ],
+        "properties": {
+          "doctorId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The ID of the doctor to book.",
+            "example": 1
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Requested slot start time (ISO 8601). Must fall on working hours (08:00-16:00, Sun-Thu) and align with a 30-min interval.",
+            "example": "2026-11-18T09:00:00"
+          },
+          "patientFirstName": {
+            "type": "string",
+            "description": "Patient's first name.",
+            "example": "John"
+          },
+          "patientLastName": {
+            "type": "string",
+            "description": "Patient's last name.",
+            "example": "Doe"
+          },
+          "patientPhoneNumber": {
+            "type": "string",
+            "description": "Contact telephone or mobile number.",
+            "example": "+1-555-0199"
+          },
+          "patientDateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "description": "Patient's date of birth (YYYY-MM-DD).",
+            "example": "1992-04-15"
+          }
+        }
+      },
+      "BookAppointmentResponse": {
+        "type": "object",
+        "required": [
+          "message",
+          "appointmentId",
+          "patientId"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Informational message with booking confirmation and instructions.",
+            "example": "Appointment booked successfully. Your Patient ID is 1 — save it to view your appointments."
+          },
+          "appointmentId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The ID of the created appointment.",
+            "example": 1
+          },
+          "patientId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique patient ID generated for the patient.",
+            "example": 1
+          }
+        }
+      },
+      "CancelAppointmentRequest": {
+        "type": "object",
+        "required": [
+          "appointmentId",
+          "patientId"
+        ],
+        "properties": {
+          "appointmentId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "ID of the appointment to cancel.",
+            "example": 1
+          },
+          "patientId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "ID of the patient who booked the appointment (used for ownership verification).",
+            "example": 1
+          }
+        }
+      },
+      "CancelAppointmentResponse": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Result confirmation message.",
+            "example": "Appointment cancelled successfully."
+          }
+        }
+      },
+      "PatientAppointment": {
+        "type": "object",
+        "required": [
+          "appointmentId",
+          "doctorId",
+          "doctorName",
+          "doctorSpecialty",
+          "startTime",
+          "appointmentStatus"
+        ],
+        "properties": {
+          "appointmentId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique appointment identifier.",
+            "example": 1
+          },
+          "doctorId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Attending doctor ID.",
+            "example": 3
+          },
+          "doctorName": {
+            "type": "string",
+            "description": "Full name of the doctor.",
+            "example": "James Anderson"
+          },
+          "doctorSpecialty": {
+            "type": "string",
+            "description": "Doctor's medical field.",
+            "example": "Cardiology"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start time of the scheduled appointment.",
+            "example": "2026-11-18T09:00:00"
+          },
+          "appointmentStatus": {
+            "type": "string",
+            "description": "Status of the appointment.",
+            "enum": [
+              "Upcoming",
+              "Completed",
+              "Cancelled"
+            ],
+            "example": "Upcoming"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Description of the reason why the request failed.",
+            "example": "Cannot book an appointment in the past."
+          }
+        }
+      }
+    }
+  }
+}

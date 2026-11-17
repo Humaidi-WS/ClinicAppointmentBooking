@@ -1,0 +1,32 @@
+:root {
+  --teal: #1b7a5a;
+  --muted: #5b6b66;
+  --line: #d7e0dc;
+  --danger: #b42318;
+  --page: #f3f6f4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--page);
+  color: #16302a;
+  font-family: Inter, Segoe UI, system-ui, sans-serif;
+}
+
+button,
+select,
+input {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+input:disabled {
+  cursor: not-allowed;
+}

@@ -1,0 +1,152 @@
+.page {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  margin: 0.15rem 0 0;
+  font-size: 1.8rem;
+}
+
+.eyebrow,
+.muted {
+  margin: 0;
+  color: var(--muted);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+.patient-form {
+  display: flex;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.patient-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+input,
+button {
+  font: inherit;
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+}
+
+input {
+  border: 1px solid var(--line);
+}
+
+.patient-form button,
+.actions button {
+  border: 0;
+  background: var(--teal);
+  color: white;
+  font-weight: 700;
+}
+
+.actions button {
+  background: #b42318;
+}
+
+.actions button:disabled {
+  opacity: 0.6;
+}
+
+.list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1rem 1.15rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.card h2,
+.card p {
+  margin: 0;
+}
+
+.card p {
+  color: var(--muted);
+}
+
+.when {
+  margin-top: 0.35rem !important;
+  color: #244 !important;
+  font-weight: 600;
+}
+
+.actions {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+}
+
+.status {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: #e8f1ee;
+}
+
+.status[data-status='Cancelled'] {
+  background: #f3ecec;
+  color: #8a1f1f;
+}
+
+.status[data-status='Upcoming'] {
+  background: #e7f7ee;
+  color: #146037;
+}
+
+.banner {
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+}
+
+.banner.error {
+  background: #fdecec;
+  color: #8a1f1f;
+}
+
+.banner.success {
+  background: #e7f7ee;
+  color: #146037;
+}
+
+@media (max-width: 700px) {
+  .card {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .actions {
+    width: 100%;
+    justify-items: start;
+  }
+}

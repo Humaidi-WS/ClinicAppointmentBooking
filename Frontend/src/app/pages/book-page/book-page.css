@@ -1,0 +1,176 @@
+.page {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  margin: 0.15rem 0 0;
+  font-size: 1.8rem;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.hint,
+.help,
+.muted {
+  color: var(--muted);
+  margin: 0;
+}
+
+.help {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) 1fr;
+  gap: 1.25rem;
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+select,
+input {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+  background: #fff;
+}
+
+.field-error {
+  color: var(--danger);
+  font-weight: 500;
+  font-size: 0.82rem;
+}
+
+.required {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.slots-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.slots-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.65rem;
+}
+
+.slot {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f6f8f7;
+  padding: 0.7rem 0.5rem;
+  display: grid;
+  gap: 0.2rem;
+  cursor: pointer;
+}
+
+.slot.free {
+  background: #ecf8f1;
+  border-color: #b7e0c6;
+}
+
+.slot.booked,
+.slot.past {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.slot.booked {
+  background: #f7eeee;
+  border-color: #e3c4c4;
+}
+
+.slot.selected {
+  outline: 2px solid var(--teal);
+  background: #d9f3e4;
+}
+
+.slot-time {
+  font-weight: 700;
+}
+
+.slot-state {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.primary {
+  margin-top: 0.5rem;
+  border: 0;
+  border-radius: 12px;
+  background: var(--teal);
+  color: white;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+}
+
+.banner {
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+}
+
+.banner.error {
+  background: #fdecec;
+  color: #8a1f1f;
+}
+
+.banner.success {
+  background: #e7f7ee;
+  color: #146037;
+}
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

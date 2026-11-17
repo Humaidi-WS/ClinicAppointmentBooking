@@ -1,0 +1,126 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">New visit</p>
+      <h1>Book an appointment</h1>
+    </div>
+    <p class="hint">Clinic hours are 08:00–16:00, Sunday–Thursday, in 30-minute slots.</p>
+  </header>
+
+  @if (error()) {
+    <div class="banner error" role="alert">{{ error() }}</div>
+  }
+  @if (success()) {
+    <div class="banner success" role="status">{{ success() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="layout" novalidate>
+    <div class="card">
+      <label>
+        Doctor
+        <select formControlName="doctorId">
+          <option [ngValue]="0" disabled>Select a doctor</option>
+          @for (doctor of doctors(); track doctor.id) {
+            <option [ngValue]="doctor.id">{{ doctor.firstName }} {{ doctor.lastName }} — {{ doctor.specialty }}</option>
+          }
+        </select>
+        @if (fieldError('doctorId')) {
+          <span class="field-error">{{ fieldError('doctorId') }}</span>
+        }
+      </label>
+
+      <label>
+        Date
+        <select formControlName="date">
+          <option value="" disabled>Select a date</option>
+          @for (date of dates(); track date) {
+            <option [value]="date">{{ date }}</option>
+          }
+        </select>
+        @if (fieldError('date')) {
+          <span class="field-error">{{ fieldError('date') }}</span>
+        }
+      </label>
+
+      <label>
+        First Name <span class="required">*</span>
+        <input type="text" placeholder="e.g. Ahmad" formControlName="patientFirstName" />
+        @if (fieldError('patientFirstName')) {
+          <span class="field-error">{{ fieldError('patientFirstName') }}</span>
+        }
+      </label>
+
+      <label>
+        Last Name <span class="required">*</span>
+        <input type="text" placeholder="e.g. Humaidi" formControlName="patientLastName" />
+        @if (fieldError('patientLastName')) {
+          <span class="field-error">{{ fieldError('patientLastName') }}</span>
+        }
+      </label>
+
+      <label>
+        Phone Number <span class="required">*</span>
+        <input type="tel" placeholder="e.g. 12345678" formControlName="patientPhoneNumber" />
+        @if (fieldError('patientPhoneNumber')) {
+          <span class="field-error">{{ fieldError('patientPhoneNumber') }}</span>
+        }
+      </label>
+
+      <label>
+        Date of Birth <span class="required">*</span>
+        <input type="date" formControlName="patientDateOfBirth" />
+        @if (fieldError('patientDateOfBirth')) {
+          <span class="field-error">{{ fieldError('patientDateOfBirth') }}</span>
+        }
+      </label>
+    </div>
+
+    <div class="card slots-card">
+      <div class="slots-header">
+        <h2>Time slots</h2>
+        @if (fieldError('time')) {
+          <span class="field-error">{{ fieldError('time') }}</span>
+        }
+        @if (bookingRuleError()) {
+          <span class="field-error">{{ bookingRuleError() }}</span>
+        }
+      </div>
+
+      @if (loadingSchedule()) {
+        <p class="muted">Loading schedule…</p>
+      } @else if (!form.controls.doctorId.value || !form.controls.date.value) {
+        <p class="muted">Pick a doctor and a date to see free and booked slots.</p>
+      } @else if (slots().length === 0) {
+        <p class="muted">No slots for this day. The clinic is closed on Fridays and Saturdays.</p>
+      } @else {
+        <div class="slot-grid">
+          @for (slot of slots(); track slot.time) {
+            <button
+              type="button"
+              class="slot"
+              [class.free]="slotStatus(slot) === 'free'"
+              [class.booked]="slotStatus(slot) === 'booked'"
+              [class.past]="slotStatus(slot) === 'past'"
+              [class.selected]="form.controls.time.value === slot.time"
+              [disabled]="slotStatus(slot) !== 'free'"
+              (click)="selectSlot(slot)"
+            >
+              <span class="slot-time">{{ slot.time }}</span>
+              <span class="slot-state">
+                @switch (slotStatus(slot)) {
+                  @case ('free') { Free }
+                  @case ('booked') { Booked }
+                  @default { Past }
+                }
+              </span>
+            </button>
+          }
+        </div>
+      }
+
+      <button class="primary" type="submit" [disabled]="submitting()">
+        {{ submitting() ? 'Booking…' : 'Book selected slot' }}
+      </button>
+    </div>
+  </form>
+</section>

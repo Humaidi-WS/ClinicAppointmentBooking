@@ -1,0 +1,60 @@
+@HostAddress = http://localhost:5246
+
+### 1. Swagger UI & OpenAPI Specification
+# Interactive Swagger UI in browser: http://localhost:5246/swagger
+GET {{HostAddress}}/openapi/v1.json
+Accept: application/json
+
+###
+
+### 2. Get All Doctors
+GET {{HostAddress}}/api/Appointments/doctors
+Accept: application/json
+
+###
+
+### 3. Get Selectable Booking Dates
+GET {{HostAddress}}/api/Appointments/dates
+Accept: application/json
+
+###
+
+### 4. Get Doctor's Daily Schedule (Slots for Doctor ID: 1)
+GET {{HostAddress}}/api/Appointments/doctors/1/schedule?date=2026-11-18
+Accept: application/json
+
+###
+
+### 5. Book an Appointment
+POST {{HostAddress}}/api/Appointments/book
+Content-Type: application/json
+Accept: application/json
+
+{
+  "doctorId": 1,
+  "startTime": "2026-11-18T09:00:00",
+  "patientFirstName": "John",
+  "patientLastName": "Doe",
+  "patientPhoneNumber": "+1-555-0199",
+  "patientDateOfBirth": "1992-04-15"
+}
+
+###
+
+### 6. Get Patient Appointments (Patient ID: 1)
+GET {{HostAddress}}/api/Appointments/patients/1/appointments
+Accept: application/json
+
+###
+
+### 7. Cancel Appointment
+DELETE {{HostAddress}}/api/Appointments/cancel
+Content-Type: application/json
+Accept: application/json
+
+{
+  "appointmentId": 1,
+  "patientId": 1
+}
+
+###
